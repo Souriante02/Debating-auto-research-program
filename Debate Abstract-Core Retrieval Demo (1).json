@@ -1,0 +1,755 @@
+{
+  "name": "Debate Abstract-Core Retrieval Demo",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d7e4553e-d2a3-4355-bae9-90e9ede25fda",
+      "name": "Run Demo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1760,
+        1248
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Frozen abstract cores. Seeding makes ZERO LLM calls so it cannot fail on stage.\n// Every motion here is one the team has actually competed on (original Chinese motion\n// and source file kept in `source`, so any result can be traced back to real material).\n// Shape: { motion, source, output: { abstract_core, value_clash, burdens, stakeholders, core_mechanism } }\n// To regenerate uniformly, run workflow 2 and paste its output here.\nconst skeletons = [\n  {\n    motion: 'This house believes that the public deconstruction of the norm \\'do not speak ill of the dead\\' is a bad thing',\n    source: 'Case notes and rebuttal file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether an openly held practice should be condemned because a minority abuse it, or judged by the principle it serves, given that extending any entitlement to everyone makes some misuse inevitable.',\n      value_clash: 'Judging an open practice by its underlying principle versus judging it by its worst users.',\n      burdens: 'The proposition must show the abuse is the practice\\'s dominant real form rather than a fringe tail; the opposition must show the principle is sound and that predictable misuse is the price of any entitlement held by everyone.',\n      stakeholders: 'Those the practice is exercised upon, ordinary participants, bad-faith participants, and the collective that sets the norm.',\n      core_mechanism: 'Any entitlement extended to everyone will be used badly by some, so the question is whether that predictable extreme tail redefines the practice or is simply the cost of the practice existing at all.',\n    },\n  },\n  {\n    motion: 'This house believes radical feminism does more good than harm for gender equality',\n    source: 'Attack and defence file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether a collective pursuing a legitimate end through disruptive, norm-breaking means contributes net positively, when the extremity that forces attention is the same feature opponents use to discredit the whole.',\n      value_clash: 'The necessity of a disruptive vanguard versus the backlash and delegitimisation it generates.',\n      burdens: 'The proposition must show that an ignored claim enters public view only when some actors break normal channels; the opposition must show the extreme wing costs more allies than the attention is worth.',\n      stakeholders: 'The moderate majority under the label, the disruptive minority, undecided observers, and opponents of the claim.',\n      core_mechanism: 'A collective is judged by its most extreme participants, and the disruption that makes a claim visible is the same behaviour used to discredit everyone under the label, so visibility and delegitimisation arrive together.',\n    },\n  },\n  {\n    motion: 'This house believes social media brings people closer together',\n    source: 'Attack and defence file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether an intermediating system produces genuine closeness between individuals, or produces the appearance of contact while the conditions required for real understanding are quietly eroded.',\n      value_clash: 'Access and frequency of contact versus depth and authenticity of connection.',\n      burdens: 'The proposition must show the contact it enables converts into relationships that would not otherwise exist, especially for the isolated; the opposition must show it substitutes for deeper contact rather than adding to it.',\n      stakeholders: 'Isolated individuals, ordinary participants, the operators of the intermediating system, and the communities it displaces.',\n      core_mechanism: 'Lowering the cost of contact multiplies interactions but changes what an interaction is, so more connection can coexist with less understanding.',\n    },\n  },\n  {\n    motion: 'This house believes the spread of AI counselling should be treated with caution',\n    source: 'First speech and case file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether the rapid spread of an immature substitute into a high-stakes domain should be restrained, when its accessibility is real but its failures are catastrophic and invisible to the person relying on it.',\n      value_clash: 'Expanding access to an unmet need versus the irreversibility of failure in a high-stakes domain.',\n      burdens: 'The proposition must show the substitute fails in ways the user cannot detect and that failure falls on the most vulnerable; the opposition must show the counterfactual is no help at all rather than expert help.',\n      stakeholders: 'Those relying on the substitute in crisis, the qualified providers displaced, the supplier, and the regulator.',\n      core_mechanism: 'A cheap substitute reaches those the expert system never reached, but the user cannot tell when it is wrong, and in this domain being wrong is not recoverable.',\n    },\n  },\n  {\n    motion: 'This house believes manufacturer self-certification of aircraft safety is a developmental trend rather than a stopgap',\n    source: 'Prep file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether delegating verification to the party being verified is a genuine evolution of oversight or a compensation for a supervisor that can no longer keep pace, given that incentives diverge exactly when verification matters most.',\n      value_clash: 'Efficiency and expertise of the insider versus independence of the verifier.',\n      burdens: 'The proposition must show expertise has migrated irreversibly to the producer and oversight can be redesigned around that; the opposition must show the arrangement exists from under-resourcing and fails in the cases it most needs to catch.',\n      stakeholders: 'Those exposed to the risk, the producing party, the supervising body, and insiders who raise concerns.',\n      core_mechanism: 'The party with the deepest knowledge is also the party with the strongest interest in a favourable result, so competence and impartiality pull in opposite directions.',\n    },\n  },\n  {\n    motion: 'This house believes restaurants\\' use of pre-made meals increases consumer welfare',\n    source: 'Evidence and prep file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether industrial standardisation of a craft-based provision increases welfare, when it raises the floor and lowers cost but removes the upper range of quality and leaves the recipient unable to know what they are receiving.',\n      value_clash: 'Raising the floor for everyone versus informed choice and the loss of the ceiling.',\n      burdens: 'The proposition must show the floor genuinely rises for the majority and the risk removed exceeds the quality forgone; the opposition must show the recipient pays for one thing and receives another, and that the lost information is itself the harm.',\n      stakeholders: 'Recipients of the provision, the providers, the industrial suppliers, and the skilled practitioners displaced.',\n      core_mechanism: 'Standardisation compresses variance in both directions, so the worst outcomes improve and the best disappear, and the recipient\\'s ability to tell which they are getting disappears with it.',\n    },\n  },\n  {\n    motion: 'This house believes young people should keep escalating their credentials as credentials devalue',\n    source: 'First speech and evidence file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether an individually rational decision to escalate remains rational once everyone makes it, when the return on escalation falls as participation rises and the resource spent cannot be recovered.',\n      value_clash: 'Individual competitive advantage versus collective zero-sum exhaustion.',\n      burdens: 'The proposition must show the escalation still yields a real relative advantage to whoever makes it; the opposition must show the marginal return has collapsed and the escalation costs an irreplaceable window elsewhere.',\n      stakeholders: 'Those who escalate, those who decline, the institutions selecting between them, and those financing the escalation.',\n      core_mechanism: 'When a positional good is chased by everyone, effort rises while relative position stays fixed, so the rational individual move makes every participant worse off and destroys the scarcity that made the good valuable.',\n    },\n  },\n  {\n    motion: 'This house would fund digital consciousness upload rather than physical survival for all',\n    source: 'Prep file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether a collective facing an existential constraint should divide finite means between two incompatible routes, when the more attractive route cannot be scaled to everyone and rationing access destroys the cooperation the other route requires.',\n      value_clash: 'Pursuing the more desirable outcome for some versus preserving a route that can include everyone.',\n      burdens: 'The proposition must show the attractive route is reachable in time and access can be allocated without collapsing cooperation; the opposition must show exclusion converts the excluded from contributors into opponents.',\n      stakeholders: 'The excluded majority, those granted access, those allocating access, and the generations that follow.',\n      core_mechanism: 'An option only a few can take does not merely split the budget; it removes the excluded majority\\'s reason to sustain the alternative, so the division is destructive rather than proportional.',\n    },\n  },\n  {\n    motion: 'This house believes developing nations should prioritise economic growth over environmental protection',\n    source: 'Attack and defence file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether a collective facing urgent present deprivation should prioritise immediate material improvement over a diffuse, irreversible long-horizon harm borne disproportionately by those who did not cause it.',\n      value_clash: 'Present urgency of the deprived versus irreversibility of long-horizon harm.',\n      burdens: 'The proposition must show the deprivation is severe enough that deferral is not available and capacity to repair follows improvement; the opposition must show the harm crosses a threshold beyond which repair is impossible.',\n      stakeholders: 'The currently deprived, those who follow them, the collectives that already improved, and those bearing the harm without causing it.',\n      core_mechanism: 'The costs fall in different periods and on different parties, so what is framed as one actor\\'s tradeoff is in fact a transfer from one group to another.',\n    },\n  },\n  {\n    motion: 'This house would make voting compulsory',\n    source: 'Prep file (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether participation in a collective decision should be a protected choice or an enforced duty, when leaving it optional systematically silences exactly the groups the decision most affects.',\n      value_clash: 'Individual autonomy including the right to abstain versus the representativeness of the collective outcome.',\n      burdens: 'The proposition must show voluntary participation filters by resources and confidence, entrenching those already heard; the opposition must show compelled participation without engagement degrades the decision and that autonomy includes refusal.',\n      stakeholders: 'Those who rarely participate, habitual participants, those who organise the decision, and the collective bound by it.',\n      core_mechanism: 'Voluntary participation is not neutral because it filters by resources and confidence, so a formally equal entitlement produces substantively unequal representation.',\n    },\n  },\n  {\n    motion: 'This house believes that for young people, who they want to become matters more than who they refuse to become',\n    source: 'Both sides\\' prep files (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether an individual is better guided by an aspirational ceiling they move toward or a prohibitive floor they refuse to fall below, when the first gives direction but is easily inherited unexamined and the second gives resistance but no destination.',\n      value_clash: 'Direction and drive from a positive ideal versus authorship and resistance from a negative boundary.',\n      burdens: 'The proposition must show that without a destination a life has only edges and drive cannot come from refusal alone; the opposition must show positive goals are the easiest thing to borrow from the surrounding order, so only refusal secures authorship.',\n      stakeholders: 'The individual choosing, those who set the prevailing script, and those who follow it unexamined.',\n      core_mechanism: 'A positive goal is easy to adopt unexamined from the surrounding order while a refusal is hard to borrow, but a refusal alone defines the edges of a life without filling its centre.',\n    },\n  },\n  {\n    motion: 'This house believes the passage of time is poison to love',\n    source: 'First speech (round debated in Chinese)',\n    output: {\n      abstract_core: 'Whether duration degrades a bond or is the only process capable of producing the qualities the bond is said to consist of, which turns the test into a dispute over what the thing being tested actually is.',\n      value_clash: 'Intensity and novelty as the essence of the bond versus depth and reliability built only by duration.',\n      burdens: 'The proposition must show what is lost over time is constitutive of the thing rather than incidental; the opposition must show anything duration can dissolve was never the thing in question, so the test identifies rather than destroys.',\n      stakeholders: 'Both parties to the bond, those who leave early, and those who remain.',\n      core_mechanism: 'If the bond is defined by early intensity then duration destroys it, and if it is defined by understanding and reliability then duration is the only thing that can build it, so the disagreement is definitional rather than empirical.',\n    },\n  },\n];\n\nreturn skeletons.map((s) => ({ json: s }));"
+      },
+      "id": "964883de-212c-4349-a563-12e0ab9b20c6",
+      "name": "Seeded Skeletons",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1536,
+        1248
+      ],
+      "notesInFlow": true,
+      "notes": "THE LIBRARY. 12 motions this team actually competed on. Skeletons were extracted from the full case documents, not from the motion line, then coach-verified and frozen. Zero LLM calls here, so seeding cannot fail on stage."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "text",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $json.output.abstract_core }}"
+            },
+            {
+              "id": "metadata",
+              "name": "metadata",
+              "type": "object",
+              "value": "={{ ({ motion: $json.motion, source: $json.source, topic_text: $json.motion.replace(/^This house (would|believes that|believes|supports|opposes|regrets)\\s+/i, ''), value_clash: $json.output.value_clash, burdens: $json.output.burdens, stakeholders: $json.output.stakeholders, core_mechanism: $json.output.core_mechanism }) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "57890da7-d17d-45fc-b3fb-52387f825cf1",
+      "name": "Prepare Document",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1312,
+        1248
+      ],
+      "notesInFlow": true,
+      "notes": "THE KEY DECISION. text = abstract_core only. The original motion and everything topical is demoted to metadata. What gets embedded is the abstraction, not the document."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "bcdb53b7-0b3b-40ba-ac8c-0746963f01e9",
+      "name": "Loop Cores (1 at a time)",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1088,
+        1248
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "debate-cores-mistral",
+          "cachedResultName": "debate-cores-mistral"
+        },
+        "clearStore": "={{ $runIndex === 0 }}"
+      },
+      "id": "1d099ba9-6c04-488e-be9a-a96ef297ceb8",
+      "name": "Index Cores",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        1456
+      ],
+      "notesInFlow": true,
+      "notes": "STORE B: indexed on the abstract core. Distance here means 'same argument structure'."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "41d35a12-4d20-438b-a4ec-06bdf81fe6ba",
+      "name": "Embeddings Mistral (Cores)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        1680
+      ],
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "pxoyyZ18t2FPYfJu",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "motion",
+                "value": "={{ $json.metadata.motion }}"
+              },
+              {
+                "name": "source",
+                "value": "={{ $json.metadata.source }}"
+              },
+              {
+                "name": "value_clash",
+                "value": "={{ $json.metadata.value_clash }}"
+              },
+              {
+                "name": "burdens",
+                "value": "={{ $json.metadata.burdens }}"
+              },
+              {
+                "name": "stakeholders",
+                "value": "={{ $json.metadata.stakeholders }}"
+              },
+              {
+                "name": "core_mechanism",
+                "value": "={{ $json.metadata.core_mechanism }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "cec447aa-fe88-41dd-9a07-5a56016c1104",
+      "name": "Abstract Core Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -720,
+        1680
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "debate-topics",
+          "cachedResultName": "debate-topics"
+        },
+        "clearStore": "={{ $runIndex === 0 }}"
+      },
+      "id": "500cbf65-8b31-4ea9-946a-26b1f7b15bc9",
+      "name": "Index Topics",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        -528,
+        1456
+      ],
+      "notesInFlow": true,
+      "notes": "STORE A: indexed on the motion text with the ritual prefix stripped, so the baseline matches on subject rather than sentence form. This is the honest baseline - what a normal RAG would build from this material."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0870f23d-5508-4edc-b35a-e870158e4b3d",
+      "name": "Embeddings Mistral (Topics)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        1680
+      ],
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "pxoyyZ18t2FPYfJu",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $('Loop Cores (1 at a time)').item.json.metadata.topic_text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "motion",
+                "value": "={{ $('Loop Cores (1 at a time)').item.json.metadata.motion }}"
+              },
+              {
+                "name": "source",
+                "value": "={{ $('Loop Cores (1 at a time)').item.json.metadata.source }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "5e998ae6-ccb8-421d-8e87-17230d181234",
+      "name": "Motion Text Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        1680
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "a7707124-7de6-4e63-9311-b1e0e908f428",
+      "name": "Throttle (2s)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        1456
+      ],
+      "webhookId": "dc4ccbdf-98be-4e93-9bd7-20148d8be804"
+    },
+    {
+      "parameters": {},
+      "id": "d0956db4-1892-488c-a1f9-59d5875047d7",
+      "name": "Collapse",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        1088
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "motion",
+              "name": "motion",
+              "type": "string",
+              "value": "This house would ban anonymous accounts on social media"
+            },
+            {
+              "id": "query_core",
+              "name": "frozen_core_fallback",
+              "type": "string",
+              "value": "Whether a protection available to everyone should be removed because a minority use it to cause harm, when removing it also removes the shelter the least powerful depend on in order to participate at all."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4018ed5f-8350-40e5-99b9-035885e558bd",
+      "name": "Query Motion",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        1088
+      ],
+      "notesInFlow": true,
+      "notes": "A motion the library has never seen. frozen_core_fallback is only used if the live extraction fails."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Break this debate motion into its argument skeleton. Describe structure only. Never argue a side.\n\nThe abstract_core field is what matters. ONE sentence, 25-40 words: what is at stake, both competing values, and what is given up in exchange.\n\nHARD RULE: abstract_core must contain NO word that reveals the subject matter. Name every party structurally instead: \"the party with less power\", \"the individual\", \"the institution\", \"the collective\", \"a practice\", \"an entitlement\". Forbidden are all subject nouns, including but not limited to: dead, deceased, departed, mourning, women, gender, student, school, credential, worker, wage, patient, passenger, aircraft, food, money, vote, child, love, youth, internet, platform, technology.\n\nTEST BEFORE YOU ANSWER: your abstract_core must plausibly fit at least three motions from completely unrelated fields. If a reader could name the topic from it, it has failed. Rewrite it.\n\nExample of a FAILED core (topic visible): \"Whether society should dismantle the norm protecting the reputation of the deceased, trading respect for the departed against the right to unvarnished truth.\"\nThe same core, FIXED: \"Whether an openly held practice should be condemned because a minority abuse it, or judged by the principle it serves, when extending any entitlement to everyone makes some misuse inevitable.\"\n\nTwo more correct examples:\nMotion: This house would ban payday lending -> \"Whether the collective should prohibit an agreement the weaker party enters willingly, to prevent extraction from them, at the cost of removing the only option they had left.\"\nMotion: This house believes talent matters more than effort -> \"Whether an outcome is better explained by an endowment the individual did not choose or by a contribution they did, trading recognition of merit against the coherence of holding anyone responsible.\"\n\nOther fields, all short and also topic-stripped: value_clash (the two competing values, one clause). burdens (one clause per side). stakeholders (structural, not by sector). core_mechanism (one sentence, the causal chain in dispute).\n\nOutput ONE JSON object and nothing else. No markdown fences, no commentary. Every value must be a plain string. Exact shape:\n{\"abstract_core\":\"...\",\"value_clash\":\"...\",\"burdens\":\"...\",\"stakeholders\":\"...\",\"core_mechanism\":\"...\"}\n\nMotion: {{ $json.motion }}\n\n/no_think",
+        "messages": {
+          "messageValues": []
+        }
+      },
+      "id": "27daeccb-515c-470d-92e5-af5dec9b168a",
+      "name": "Compute Query Core",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        -352,
+        1088
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "LIVE. A brand-new motion arrives with nothing but its title, so its skeleton is extracted at query time using the same prompt used for ingestion."
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3.8-27b",
+        "options": {
+          "maxTokensToSample": 700,
+          "temperature": 0.2
+        }
+      },
+      "id": "8dd6dec7-3783-41c0-9b81-c0f6a1b03a61",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        864
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "YuS8pY8dksRpVYc4",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "debate-topics",
+          "cachedResultName": "debate-topics"
+        },
+        "prompt": "={{ $('Query Motion').item.json.motion.replace(/^This house (would|believes that|believes|supports|opposes|regrets)\\s+/i, '') }}",
+        "topK": 3
+      },
+      "id": "444ff959-9817-4f95-92c1-66cb5b66a6c1",
+      "name": "Topical Search",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        944
+      ],
+      "notesInFlow": true,
+      "notes": "Same query, Store A. Retrieves what looks similar."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5f03e26e-e961-4591-8936-12125669a0ca",
+      "name": "Embeddings Mistral (Topical Query)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        128,
+        1168
+      ],
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "pxoyyZ18t2FPYfJu",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "list",
+          "value": "debate-cores-mistral",
+          "cachedResultName": "debate-cores-mistral"
+        },
+        "prompt": "={{ $json.output?.abstract_core || $('Query Motion').item.json.frozen_core_fallback }}",
+        "topK": 3
+      },
+      "id": "f9306cc7-9615-4b8b-90a5-c1c959886b9c",
+      "name": "Structural Search",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        1344
+      ],
+      "notesInFlow": true,
+      "notes": "Same query, Store B. Retrieves what argues similarly."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5333f977-5b32-4b59-8ec7-1519e35f7e6a",
+      "name": "Embeddings Mistral (Structural Query)",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        128,
+        1568
+      ],
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "pxoyyZ18t2FPYfJu",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "32cd66ae-7d45-422f-bdcc-fce8a8b35dc5",
+      "name": "Merge Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        352,
+        1152
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "query_motion",
+              "name": "query_motion",
+              "type": "string",
+              "value": "={{ $('Query Motion').item.json.motion }}"
+            },
+            {
+              "id": "query_core",
+              "name": "query_abstract_core",
+              "type": "string",
+              "value": "={{ $('Parse Query Core').item.json.output.abstract_core || $('Query Motion').item.json.frozen_core_fallback }}"
+            },
+            {
+              "id": "core_live",
+              "name": "query_core_was_live",
+              "type": "boolean",
+              "value": "={{ !!$('Parse Query Core').item.json.output.abstract_core }}"
+            },
+            {
+              "id": "topical",
+              "name": "topical_results",
+              "type": "array",
+              "value": "={{ $('Topical Search').all().map((i, n) => ({ rank: n + 1, motion: i.json.document.metadata.motion, score: Number(i.json.score.toFixed(3)), source: i.json.document.metadata.source })) }}"
+            },
+            {
+              "id": "structural",
+              "name": "structural_results",
+              "type": "array",
+              "value": "={{ $('Structural Search').all().map((i, n) => ({ rank: n + 1, motion: i.json.document.metadata.motion, score: Number(i.json.score.toFixed(3)), source: i.json.document.metadata.source, why: i.json.document.pageContent })) }}"
+            },
+            {
+              "id": "verdict",
+              "name": "top_hit_differs",
+              "type": "boolean",
+              "value": "={{ $('Topical Search').all()[0].json.document.metadata.motion !== $('Structural Search').all()[0].json.document.metadata.motion }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "92622628-40eb-4630-b160-6eddc371ce5e",
+      "name": "Comparison",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        1152
+      ],
+      "executeOnce": true,
+      "notesInFlow": true,
+      "notes": "top_hit_differs is the whole experiment: same data, same question, two different answers."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tolerant JSON extraction. Reasoning models emit <think> blocks, markdown\n// fences and stray prose; none of that should be able to break the run.\nconst clean = (raw) => String(raw ?? '')\n  .replace(/<think>[\\s\\S]*?<\\/think>/gi, '')\n  .replace(/<\\/?think>/gi, '')\n  .replace(/```[a-z]*/gi, '')\n  .replace(/```/g, '');\n\nconst flatten = (v) => {\n  if (v == null) return '';\n  if (Array.isArray(v)) return v.map(flatten).filter(Boolean).join(', ');\n  if (typeof v === 'object') return Object.values(v).map(flatten).filter(Boolean).join(' ');\n  return String(v);\n};\n\nreturn $input.all().map((item) => {\n  const text = clean(item.json.text ?? item.json.output ?? item.json.response ?? '');\n  let obj = {};\n  const start = text.indexOf('{');\n  const end = text.lastIndexOf('}');\n  if (start !== -1 && end > start) {\n    try {\n      obj = JSON.parse(text.slice(start, end + 1));\n    } catch (e) {\n      try {\n        obj = JSON.parse(text.slice(start, end + 1).replace(/,\\s*([}\\]])/g, '$1'));\n      } catch (e2) {\n        obj = {};\n      }\n    }\n  }\n  return { json: {\n    output: {\n      abstract_core: flatten(obj.abstract_core),\n      value_clash: flatten(obj.value_clash),\n      burdens: flatten(obj.burdens),\n      stakeholders: flatten(obj.stakeholders),\n      core_mechanism: flatten(obj.core_mechanism),\n    },\n    parse_ok: !!flatten(obj.abstract_core),\n    raw_preview: text.slice(0, 300),\n  } };\n});"
+      },
+      "id": "7ea9cac4-2a22-4555-a2a4-c7c19c694af7",
+      "name": "Parse Query Core",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        1088
+      ],
+      "notesInFlow": true,
+      "notes": "Tolerant JSON extraction: strips <think> blocks, code fences and stray prose. A malformed model reply degrades to the frozen core instead of killing the run."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Run Demo": {
+      "main": [
+        [
+          {
+            "node": "Seeded Skeletons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seeded Skeletons": {
+      "main": [
+        [
+          {
+            "node": "Prepare Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Document": {
+      "main": [
+        [
+          {
+            "node": "Loop Cores (1 at a time)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Cores (1 at a time)": {
+      "main": [
+        [
+          {
+            "node": "Collapse",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Index Cores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Index Cores": {
+      "main": [
+        [
+          {
+            "node": "Index Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Index Topics": {
+      "main": [
+        [
+          {
+            "node": "Throttle (2s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throttle (2s)": {
+      "main": [
+        [
+          {
+            "node": "Loop Cores (1 at a time)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Mistral (Cores)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Index Cores",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Abstract Core Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Index Cores",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Mistral (Topics)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Index Topics",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Motion Text Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Index Topics",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse": {
+      "main": [
+        [
+          {
+            "node": "Query Motion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Motion": {
+      "main": [
+        [
+          {
+            "node": "Compute Query Core",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Compute Query Core",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Query Core": {
+      "main": [
+        [
+          {
+            "node": "Parse Query Core",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Mistral (Topical Query)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Topical Search",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Mistral (Structural Query)": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Structural Search",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Topical Search": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structural Search": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Results": {
+      "main": [
+        [
+          {
+            "node": "Comparison",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Query Core": {
+      "main": [
+        [
+          {
+            "node": "Topical Search",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Structural Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c1b1591f-258a-4409-8b4d-6290b8ddb380",
+  "meta": {
+    "instanceId": "64852c7a51a9139cc8dda9eede048666c16d00545feed5f0d50815764663e0af"
+  },
+  "nodeGroups": [],
+  "id": "oCjZyjYpmBvlkwOZ",
+  "tags": []
+}
